@@ -1,134 +1,142 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const pnlTableBody = document.querySelector('#pnl-table tbody');
-    const monthlyProfitEl = document.getElementById('monthly-profit');
-    const projectedProfitEl = document.getElementById('projected-profit');
-    const winrateEl = document.getElementById('winrate');
-    const monthlyFeesEl = document.getElementById('monthly-fees');
-    const lastUpdatedEl = document.getElementById('last-updated');
-    const chartCanvas = document.getElementById('pnl-chart').getContext('2d');
+// Uložení API klíčů do localStorage
+function saveKeys() {
+    const apiKey = document.getElementById('apiKey').value;
+    const secretKey = document.getElementById('secretKey').value;
+    localStorage.setItem('bingxApiKey', apiKey);
+    localStorage.setItem('bingxSecretKey', secretKey);
+    alert('Klíče uloženy!');
+    fetchData();
+}
 
-    let pnlChart;
+// Funkce pro vytvoření podpisu pro BingX API
+function createSignature(secretKey, params) {
+    const queryString = new URLSearchParams(params).toString();
+    return CryptoJS.HmacSHA256(queryString, secretKey).toString(CryptoJS.enc.Hex);
+}
 
-    /**
-     * DŮLEŽITÉ: PROPOJENÍ S REÁLNÝM API
-     * Tato funkce `getDummyData` pouze simuluje data pro ukázku.
-     * V reálné aplikaci byste místo ní volali svůj backend (server),
-     * který by bezpečně komunikoval s BingX API a vracel data v podobném formátu.
-     * Váš kód by pak vypadal nějak takto:
-     *
-     * async function fetchData() {
-     * try {
-     * const response = await fetch('https://adresa-vaseho-serveru.cz/api/data');
-     * if (!response.ok) throw new Error('Chyba při načítání dat');
-     * const data = await response.json();
-     * return data;
-     * } catch (error) {
-     * console.error('API Error:', error);
-     * return null; // V případě chyby vrátit null
-     * }
-     * }
-     */
-    function getDummyData() {
-        // Simulovaná data pro 10 dní
-        const dailyPnl = [];
-        let cumulativePnl = 1500; // Počáteční simulovaný zisk
-        for (let i = 9; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            const profit = Math.random() * 200 - 80; // Náhodný zisk/ztráta mezi -80 a 120
-            cumulativePnl += profit;
-            dailyPnl.push({
-                date: date.toISOString().split('T')[0],
-                pnl: parseFloat(profit.toFixed(2)),
-                cumulativePnl: parseFloat(cumulativePnl.toFixed(2))
-            });
-        }
-
-        const monthlyProfit = dailyPnl.reduce((sum, day) => sum + day.pnl, 0);
-        const last7daysAvg = dailyPnl.slice(-7).reduce((sum, day) => sum + day.pnl, 0) / 7;
-        const projectedProfit = last7daysAvg * 30;
-
-        return {
-            dailyPnl,
-            monthlyProfit: parseFloat(monthlyProfit.toFixed(2)),
-            projectedProfit: parseFloat(projectedProfit.toFixed(2)),
-            winrate: parseFloat((Math.random() * (85 - 55) + 55).toFixed(2)), // Náhodný winrate mezi 55% a 85%
-            monthlyFees: parseFloat((Math.random() * 200 + 50).toFixed(2)) // Náhodné poplatky
-        };
+// Funkce pro načtení dat z BingX API
+async function fetchData() {
+    const apiKey = localStorage.getItem('bingxApiKey');
+    const secretKey = localStorage.getItem('bingxSecretKey');
+    if (!apiKey || !secretKey) {
+        alert('Prosím, vložte API a Secret klíč.');
+        return;
     }
 
-    function updateDashboard() {
-        // V reálné aplikaci byste zde volali `fetchData()` místo `getDummyData()`
-        const data = getDummyData();
+    const timestamp = Date.now();
+    const params = { timestamp };
+    const signature = createSignature(secretKey, params);
+    const url = `https://api.bingx.com/api/v1/trade/history?timestamp=${timestamp}&signature=${signature}`;
 
-        if (!data) {
-             // Zde můžete zobrazit chybovou hlášku v UI
-            return;
-        }
-
-        // 1. Aktualizace tabulky denního zisku
-        pnlTableBody.innerHTML = '';
-        data.dailyPnl.slice().reverse().forEach(day => {
-            const row = document.createElement('tr');
-            const profitClass = day.pnl >= 0 ? 'profit-positive' : 'profit-negative';
-
-            row.innerHTML = `
-                <td>${new Date(day.date).toLocaleDateString('cs-CZ')}</td>
-                <td class="${profitClass}">${day.pnl.toFixed(2)} USDT</td>
-            `;
-            pnlTableBody.appendChild(row);
+    try {
+        const response = await fetch(url, {
+            headers: { 'X-BX-APIKEY': apiKey }
         });
+        const data = await response.json();
 
-        // 2. Aktualizace měsíčních statistik
-        monthlyProfitEl.textContent = `${data.monthlyProfit.toFixed(2)} USDT`;
-        monthlyProfitEl.className = data.monthlyProfit >= 0 ? 'positive' : 'negative';
-
-        projectedProfitEl.textContent = `${data.projectedProfit.toFixed(2)} USDT`;
-        projectedProfitEl.className = data.projectedProfit >= 0 ? 'positive' : 'negative';
-        
-        winrateEl.textContent = `${data.winrate}%`;
-        monthlyFeesEl.textContent = `${data.monthlyFees.toFixed(2)} USDT`;
-
-        // 3. Aktualizace grafu
-        const chartLabels = data.dailyPnl.map(d => new Date(d.date).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric'}));
-        const chartData = data.dailyPnl.map(d => d.cumulativePnl);
-        
-        if (pnlChart) {
-            pnlChart.data.labels = chartLabels;
-            pnlChart.data.datasets[0].data = chartData;
-            pnlChart.update();
-        } else {
-            pnlChart = new Chart(chartCanvas, {
-                type: 'line',
-                data: {
-                    labels: chartLabels,
-                    datasets: [{
-                        label: 'Celkový zisk (USDT)',
-                        data: chartData,
-                        borderColor: 'rgba(0, 207, 232, 1)',
-                        backgroundColor: 'rgba(0, 207, 232, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointBackgroundColor: 'rgba(0, 207, 232, 1)',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                        y: { ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                    }
-                }
-            });
-        }
-        
-        // 4. Aktualizace času
-        lastUpdatedEl.textContent = new Date().toLocaleTimeString('cs-CZ');
+        // Předpokládáme, že data obsahují seznam obchodů
+        const trades = data.data;
+        processTrades(trades);
+    } catch (error) {
+        console.error('Chyba při načítání dat:', error);
+        // Mock data pro testování
+        const mockTrades = [
+            { time: '2025-07-25T10:00:00Z', realizedPnl: 100, fee: 1 },
+            { time: '2025-07-24T10:00:00Z', realizedPnl: -50, fee: 0.5 },
+            { time: '2025-07-23T10:00:00Z', realizedPnl: 75, fee: 0.8 },
+            { time: '2025-07-22T10:00:00Z', realizedPnl: 120, fee: 1.2 },
+            { time: '2025-07-21T10:00:00Z', realizedPnl: -30, fee: 0.4 },
+            { time: '2025-07-20T10:00:00Z', realizedPnl: 200, fee: 2 },
+            { time: '2025-07-19T10:00:00Z', realizedPnl: 50, fee: 0.7 },
+            { time: '2025-07-18T10:00:00Z', realizedPnl: -20, fee: 0.3 },
+            { time: '2025-07-17T10:00:00Z', realizedPnl: 80, fee: 0.9 },
+            { time: '2025-07-16T10:00:00Z', realizedPnl: 150, fee: 1.5 }
+        ];
+        processTrades(mockTrades);
     }
+}
 
-    // Spustit poprvé a pak každou minutu
-    updateDashboard();
-    setInterval(updateDashboard, 60000); // 60000 ms = 1 minuta
-});
+// Zpracování obchodních dat
+function processTrades(trades) {
+    const today = new Date();
+    const dailyProfits = {};
+    let monthlyProfit = 0;
+    let monthlyFees = 0;
+    let winTrades = 0;
+    let totalTrades = 0;
+
+    // Agregace dat podle dní
+    trades.forEach(trade => {
+        const tradeDate = new Date(trade.time).toISOString().split('T')[0];
+        const profit = parseFloat(trade.realizedPnl);
+        const fee = parseFloat(trade.fee);
+
+        if (!dailyProfits[tradeDate]) {
+            dailyProfits[tradeDate] = { profit: 0, fees: 0 };
+        }
+        dailyProfits[tradeDate].profit += profit;
+        dailyProfits[tradeDate].fees += fee;
+
+        monthlyProfit += profit;
+        monthlyFees += fee;
+
+        if (profit > 0) winTrades++;
+        totalTrades++;
+    });
+
+    // Zobrazení tabulky posledních 10 dní
+    const tableBody = document.getElementById('profitTableBody');
+    tableBody.innerHTML = '';
+    const last10Days = Object.keys(dailyProfits)
+        .sort((a, b) => new Date(b) - new Date(a))
+        .slice(0, 10);
+
+    last10Days.forEach(date => {
+        const profit = dailyProfits[date].profit.toFixed(2);
+        const row = document.createElement('tr');
+        row.className = profit > 0 ? 'positive' : 'negative';
+        row.innerHTML = `<td>${date}</td><td>${profit} USD</td>`;
+        tableBody.appendChild(row);
+    });
+
+    // Výpočet pravděpodobného měsíčního zisku (průměr za 7 dní * 30)
+    const last7Days = Object.keys(dailyProfits)
+        .sort((a, b) => new Date(b) - new Date(a))
+        .slice(0, 7);
+    const avgDailyProfit = last7Days.reduce((sum, date) => sum + dailyProfits[date].profit, 0) / 7;
+    const projectedProfit = (avgDailyProfit * 30).toFixed(2);
+
+    // Zobrazení statistik
+    document.getElementById('monthlyProfit').textContent = monthlyProfit.toFixed(2);
+    document.getElementById('projectedProfit').textContent = projectedProfit;
+    document.getElementById('winrate').textContent = ((winTrades / totalTrades) * 100).toFixed(2) + '%';
+    document.getElementById('monthlyFees').textContent = monthlyFees.toFixed(2);
+
+    // Vytvoření grafu
+    const ctx = document.getElementById('profitChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: last10Days.reverse(),
+            datasets: [{
+                label: 'Denní zisk (USD)',
+                data: last10Days.map(date => dailyProfits[date].profit),
+                borderColor: '#007aff',
+                backgroundColor: 'rgba(0, 122, 255, 0.2)',
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// Aktualizace dat každou minutu
+setInterval(fetchData, 60000);
+
+// Načtení dat při prvním spuštění
+fetchData();
