@@ -1,13 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BingX Profit Tracker</title>
-  <link rel="stylesheet" href="/src/styles/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>BingX Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/OMi4Z4E.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.js"></script>
+    <div class="background"></div>
+    <div class="container">
+        <header>
+            <h1>Trading Dashboard</h1>
+            <p>Přehled vašich výsledků z BingX</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Měsíční zisk</h3>
+                <p id="monthly-profit">Načítání...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Pravděpodobný měsíční zisk</h3>
+                <p id="projected-profit">Načítání...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Winrate</h3>
+                <p id="winrate">Načítání...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Měsíční poplatky</h3>
+                <p id="monthly-fees">Načítání...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Denní realizovaný zisk (10 dní)</h2>
+            <table id="pnl-table">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Realizovaný zisk (USDT)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Celkový graf</h2>
+            <canvas id="pnl-chart"></canvas>
+        </div>
+
+        <footer>
+            <p>Data se aktualizují každou minutu. Poslední aktualizace: <span id="last-updated">nikdy</span></p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
