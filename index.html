@@ -2,64 +2,40 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BingX Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="apple-touch-icon" href="https://i.imgur.com/OMi4Z4E.png">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BingX Profit Tracker</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="background"></div>
     <div class="container">
-        <header>
-            <h1>Trading Dashboard</h1>
-            <p>Přehled vašich výsledků z BingX</p>
-        </header>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Měsíční zisk</h3>
-                <p id="monthly-profit">Načítání...</p>
-            </div>
-            <div class="stat-card">
-                <h3>Pravděpodobný měsíční zisk</h3>
-                <p id="projected-profit">Načítání...</p>
-            </div>
-            <div class="stat-card">
-                <h3>Winrate</h3>
-                <p id="winrate">Načítání...</p>
-            </div>
-            <div class="stat-card">
-                <h3>Měsíční poplatky</h3>
-                <p id="monthly-fees">Načítání...</p>
-            </div>
+        <h1>BingX Profit Tracker</h1>
+        <div class="key-input">
+            <input type="text" id="apiKey" placeholder="Vložte API klíč">
+            <input type="text" id="secretKey" placeholder="Vložte Secret Key">
+            <button onclick="saveKeys()">Uložit klíče</button>
         </div>
-
-        <div class="card">
-            <h2>Denní realizovaný zisk (10 dní)</h2>
-            <table id="pnl-table">
-                <thead>
-                    <tr>
-                        <th>Datum</th>
-                        <th>Realizovaný zisk (USDT)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    </tbody>
-            </table>
+        <div class="stats">
+            <h2>Statistiky</h2>
+            <p>Měsíční zisk: <span id="monthlyProfit">0</span> USD</p>
+            <p>Pravděpodobný měsíční zisk (7 dní): <span id="projectedProfit">0</span> USD</p>
+            <p>Winrate: <span id="winrate">0%</span></p>
+            <p>Měsíční poplatky: <span id="monthlyFees">0</span> USD</p>
         </div>
-
-        <div class="card">
-            <h2>Celkový graf</h2>
-            <canvas id="pnl-chart"></canvas>
-        </div>
-
-        <footer>
-            <p>Data se aktualizují každou minutu. Poslední aktualizace: <span id="last-updated">nikdy</span></p>
-        </footer>
+        <h2>Denní zisky (posledních 10 dní)</h2>
+        <table id="profitTable">
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Zisk (USD)</th>
+                </tr>
+            </thead>
+            <tbody id="profitTableBody"></tbody>
+        </table>
+        <h2>Graf zisků</h2>
+        <canvas id="profitChart"></canvas>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
