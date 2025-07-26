@@ -1,135 +1,102 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-:root {
-    --green: #28c76f;
-    --red: #ea5455;
-    --blue: #00cfe8;
-    --text-color: #e0e0e0;
-    --bg-color: #161d31;
-    --card-bg: rgba(255, 255, 255, 0.1);
-    --border-color: rgba(255, 255, 255, 0.2);
-}
-
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
     margin: 0;
-    padding: 20px;
-    -webkit-font-smoothing: antialiased;
-}
-
-.background {
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, #5b21b6, var(--bg-color) 70%);
-    animation: rotate 30s infinite linear;
-    z-index: -1;
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    color: #333;
 }
 
 .container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding-bottom: 50px;
-}
-
-header {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0;
-}
-
-header p {
-    font-size: 1.1rem;
-    color: #a0a0a0;
-}
-
-.card, .stat-card {
-    background: var(--card-bg);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
     border-radius: 20px;
-    border: 1px solid var(--border-color);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 25px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.stat-card {
+h1, h2 {
     text-align: center;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.stat-card h3 {
-    margin-top: 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #c0c0c0;
+.key-input {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-.stat-card p {
-    margin-bottom: 0;
-    font-size: 1.75rem;
-    font-weight: 600;
+input, button {
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
 }
 
-#monthly-profit.positive, #projected-profit.positive { color: var(--green); }
-#monthly-profit.negative, #projected-profit.negative { color: var(--red); }
-#winrate { color: var(--blue); }
+input {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+button {
+    background: #007aff;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #005bb5;
+}
+
+.stats p {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+    color: #fff;
+}
+
+#projectedProfit {
+    color: #ff9500;
+}
 
 table {
     width: 100%;
     border-collapse: collapse;
+    margin: 20px 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 th, td {
-    padding: 15px;
+    padding: 10px;
     text-align: left;
-    border-bottom: 1px solid var(--border-color);
+    color: #fff;
 }
 
 th {
-    font-weight: 600;
+    background: rgba(0, 0, 0, 0.2);
 }
 
-tr:last-child td {
-    border-bottom: none;
+tr.positive {
+    background: rgba(0, 255, 0, 0.3);
 }
 
-.profit-positive {
-    background-color: rgba(40, 199, 111, 0.15);
-    color: var(--green);
-    font-weight: 600;
+tr.negative {
+    background: rgba(255, 0, 0, 0.3);
 }
 
-.profit-negative {
-    background-color: rgba(234, 84, 85, 0.15);
-    color: var(--red);
-    font-weight: 600;
-}
-
-footer {
-    text-align: center;
-    margin-top: 40px;
-    font-size: 0.9rem;
-    color: #a0a0a0;
+canvas {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px;
 }
